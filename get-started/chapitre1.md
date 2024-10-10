@@ -316,3 +316,94 @@ Ecrivez toujours un code avec les fonctionnalités les plus appropriées pour co
 
 La transpilation et les polyfills sont deux techniques très efficaces pour combler les lacunes entre le code qui utiliser les dernières fonctionnalités stables du langage, et les vieux environnements que le site ou l'application doit supporter. Puisque JS ne va pas arrêter de s'améliorer, les lacunes ne s'en iront jamais. Ces deux techniques devraient faire partie intégrante de la chaîne de production de chaque projet JS à l'avenir.
 
+### Quest-ce qu'une interprétation ?
+--
+
+C'est une question longuement débattue pour le code écrit en JS : est-ce du texte interprété ou un programme compilé ? L'opinion majoritaire semble dire que c'est un langage (de texte) interprété. Mais la réalité est un peu plus complexe que cela.
+
+Pour la plus grand partie de l'histoire des langages de programmation, les langages "interprétés" et les langages de "script" ont été considérés comme inférieurs à leurs homologues compilés. Les raisons de cette acrimonie sont nombreuses, incluant notamment l'impression qu'il manque des optimisations de performances, ainsi qu'un désamour de certaines caractéristiques de langages, comme le fait que les langages de script usent généralement du typage dynamique au lieu des langages fortement typés "plus mâtures".
+
+Les langages dits "compilés" produisent généralement une représentation portable (binaire) du programme qui est distribuée pour être exécutée plus tard. Puisqu'on n'observe pas vraiment ce genre de modèle avec JS (on distribue le code source, pas sa forme binaire), beaucoup prétendent que cela disqualifie JS de cette catégorie. En réalité, le modèle de distribution pour le format "exécutable" d'un programme est devenue drastiquement plus varié et de moins en moins pertinent depuis ces dernières décennies; pour répondre à la question, la forme que prend le programme n'a plus vraiment d'importance.
+
+Ces critiques mal informées devraient être laissées de côté. La véritable raison qui compte est d'avoir une image claire à propos de savoir si le JS est interprété ou compilé et c'est lié à la nature de la gestion des erreurs.
+
+Historiquement, les langages scriptés et interprétés étaient en général exécutés de haut en bas, ligne par ligne; il n'y a pas de passage initial par le programme pour le traiter avant le début de l'exécution (voir Image 1)
+
+Image 1
+
+Dans les langages scriptés ou interprétés, une erreur sur la ligne 5 d'un programme ne va pas être découvert tant que les lignes 1 à 4 n'ont pas été exécutées. Notamment, l'erreur de la ligne 5 peut être due à une condition d'exécution, par exemple, une variable ou une valeur étant inadaptée pour une opération, ou cela peut être dû à une commande ou une déclaration mal faite sur cette ligne. En fonction du contexte, reporter la gestion de l'erreur à la ligne où l'erreur se produit peut s'avérer un effet souhaitable ou non.
+
+Comparons ceci aux langages qui passent par une étape de traitement (appelé du parsing) avant la moindre exécution, comme illustré dans l'image 2 :
+
+Compare that to languages which do go through a processing step (typically, called parsing) before any execution occurs, as illustrated in Figure 2:
+
+Image 2
+
+Dans ce modèle de traitement, une commande invalide (comme une syntaxe cassée) sur la ligne 5 sera relevée durant la phase de traitement, avant que l'exécution commence, et le programme de n'exécutera pas. Pour relever les erreurs de syntaxe (dites "statiques"), il est préférable de le savoir avant même l'exécution vouée à l'échec.
+
+Mais alors, qu'est-ce que les langages "traités" ont en commun avec les langages "compilés" ? D'abord, tous les langages compilés sont traités. Donc un langage traité mène presque logiquement sur la route de la compilation. Dans la théorie de la compilation, la dernière étape après le traitement, c'est la génération de code : produire une forme exécutable.
+
+Une fois que n'importe quelle source de programme a été complètement traitée, c'est très commun de constater que l'exécution qui suivra va, d'une façon ou d'une autre, inclure une traduction issue de la forme traitée du programme, qu'on appelle un Arbre de Syntaxe Abstraite (AST - Abstract Syntax Tree) vers cette forme exécutable.
+
+En d'autres termes, les langages traités génèrent aussi du code avant son exécution, donc ce n'est pas aberrant de dire que dans l'esprit, ce sont des langages compilés.
+
+Le code source de JS est traité avant d'être exécuté. La spécification le demande, parce que ça nécessite d'appeler des "erreurs précoces", -- des erreurs déterminées dans le code, comme des nom de paramètre dupliqués --, afin d'être reportées avant que le code soit exécuté. Ces erreurs ne peuvent pas être reconnus tant que le code n'est pas traité.
+
+Donc **JS est un langage traité**, mais est-il compilé ?
+
+La réponse est plus proche de oui que de non. Le JS traité est converti dans une forme (binaire) optimisée, et ce "code" est ensuite exécuté (Image 2); le moteur ne change pas systématiquement vers le mode de l'exécution ligne à ligne (comme dans l'Image 1) après avoir fini tout le dur travail de traitement, la plupart des moteurs/langages ne le font pas, parce que ce serait complètement inefficace.
+
+Pour plus de précision, cette "compilation" produit (une sorte de) code binaire en bytes, qui est ensuite transmis dans la "machine virtuelle JS" pour être exécuté. Certains disent que cette VM "interprète" le code en bytes. Mais cela voudrait que Java et une douzaine d'autres langage orientée JVM seraient interprétés plutôt que compilés. Bien sûr, cela entre en contradiction avec l'affirmation courante que Java/etc. sont des langages compilés.
+
+Etonnament, alors que Java et JavaScript sont des langages bien différents, la question d'interprétation/compilation les rapprochent beaucoup !
+
+Un autre souci, c'est que les moteurs JS peuvent employer plusieurs passes de process/optimisation de JIT (Just-In-Time - Juste à temps) sur le code généré (post-traitement), ce qui, encore une fois, peut être étiqueté soit "compilation" soit "inteprétation" selon le point de vue. En réalité, c'est une situation grandement complexe sous le capot d'un moteur JS.
+
+Alors, à quoi réduire finalement ces détails ? Prenons un peu de recul et regardons le processus entier d'un program source en JS :
+
+* Après qu'un programme quite l'éditeur du ou de la développeuse, c'est transpilé par Babel, puis "packé" par Webpack (et probablement une demi-douzaine d'autres processus de _build_), c'est ensuite délivré dans cette forme très différente à un moteur JS.
+
+* Le moteur JS traite le code en un AST.
+
+* Ensuite, le moteur convertir cet AST dans une sorte de bytecode, une représentation binaire intermédiaire (IR - Intermediate Representation), qui est ensuite affiné/converti encore plus par le compileur JIT qui optimise.
+* Enfin, la VM JS exécute le programme.
+
+Pour visualiser ces étapes, encore :
+
+Image 3
+
+Est-ce que JS est géré plus comme un script interprété ligne par ligne comme dans la Figure 1, ou est-ce géré comme un langage plus complexe qui passe par un processus de une à plusieurs passes avant l'exécution ? (Figures 2 et 3) ?
+
+Je pense que c'est clair que dans l'esprit, si ce n'est en pratique, JS est un langage compilé.
+
+Et encore, la raison qui compte, puisque JS est compilé, c'est qu'on est informé d'erreurs statiques (comme une mauvaise syntaxe) avant que notre code soit exécuté. C'est un modèle d'interaction substantiellement différent que l'on a avec des programmes de scripting traditionnels, et sans doute plus utile !
+
+### Web Assembly (WASM)
+
+Une problématique dominante qui a conduit à un très grand nombre d'évolutions de JS c'est la performance, à la fois la vitesse à laquelle JS peut être interprété/compilé et la vitesse à laquelle ce code compilé peut être exécuté.
+
+En 2013, les ingénieurs de Mozilla Firefox ont faire la démo d'un portage du moteur de jeu Unreal 3 du C à du JS. La capacité de ce code à s'exécuter dans le moteur JS d'un navigateur à 60fps (60 images par secondes - NdT) a été permise grâce à une série d'optimisations que le moteur JS pouvait réaliser, spécifiquement parce que la version JS du code d'Unreal Engine a utilisé un style de code qui a favorisé un sous-ensemble du langage JS nommé "ASM.js".
+
+Ce sous-ensemble est du JS valide, écrit parfois de façons peut conventionnel dans la programmation normal, mais qui signale des informations de typage importantes au moteur afin qu'il puisse générer des optimisations clés. ASM.js a été présenté comme une façon de répondre à la pression des performances d'exécution de JS.
+
+Mais il est important de noter que ASM.js n'a jamais eu pour but d'être un code proposé par des développeurs, mais plutôt d'être une représentation d'un programme qui a été transpilé à partir d'un autre langage (comme le C), où ces "annotations" typées ont été insérés automatiquement par l'outillage.
+
+Plusieurs années après que l'ASM.js ait démontré la validité de versions de programme créé par des outils et pouvant être traité plus efficacement par le moteur JS, un autre groupe d'ingénieurs (issu également de Mozilla) a sorti Web Assembly (WASM).
+
+WASM est similaire à ASM.js dans le sens que le but original était de fournir un process pour les programmes non-JS (C, etc.) afin d'être convertis dans une forme pouvant être exécutée dans le moteur JS. Contrairement à ASM.js, WASM a en plus choisi de contourner les délais inhérents au traitement/compilation de JS avant qu'un programme soit exécuté, en représentant le programme dans une forme qui ne ressemble pas du tout à JS.
+
+WASM a un format de représentation plus proche d'Assembly (d'où son nom) qui peut être exécuté par un moteur JS en zappant le traitement/compilation qui y est normalement fait. Le traitement/compilation d'un programme WASM se produit _ahead of time_ (AOT) ou autrement dit en amont; Ce qui est distribué est un programme empaqueté en binaire, prêt à être exécuté dans le moteur JS avec un minimum de traitement.
+
+L'une des motivations premières pour WASM était clairement es améliorations de performance potentielles. C'est toujours une priorité, mais WASM est également motivé par le désire d'apporter plus de parité pour les langages non)JS à la plateforme web. Par exemple, si un langage comme le Go supporte la programmation par filetage (_threaded programming_), mais que JS non, WASM offre la possibilité pour un programme en Go d'être converti dans une forme que le moteur de JS peut comprendre, sans avoir besoin d'une fonctionnalité de _threads_ dans le langage lui-même.
+
+En d'autres termes, WASM
+
+In other words, WASM relieves the pressure to add features to JS that are mostly/exclusively intended to be used by transpiled programs from other languages. That means JS feature development can be judged (by TC39) without being skewed by interests/demands in other language ecosystems, while still letting those languages have a viable path onto the web.
+
+Another perspective on WASM that's emerging is, interestingly, not even directly related to the web (W). WASM is evolving to become a cross-platform virtual machine (VM) of sorts, where programs can be compiled once and run in a variety of different system environments.
+
+So, WASM isn't only for the web, and WASM also isn't JS. Ironically, even though WASM runs in the JS engine, the JS language is one of the least suitable languages to source WASM programs with, because WASM relies heavily on static typing information. Even TypeScript (TS)—ostensibly, JS + static types—is not quite suitable (as it stands) to transpile to WASM, though language variants like AssemblyScript are attempting to bridge the gap between JS/TS and WASM.
+
+This book isn't about WASM, so I won't spend much more time discussing it, except to make one final point. Some folks have suggested WASM points to a future where JS is excised from, or minimized in, the web. These folks often harbor ill feelings about JS, and want some other language—any other language!—to replace it. Since WASM lets other languages run in the JS engine, on its face this isn't an entirely fanciful fairytale.
+
+But let me just state simply: WASM will not replace JS. WASM significantly augments what the web (including JS) can accomplish. That's a great thing, entirely orthogonal to whether some people will use it as an escape hatch from having to write JS.
