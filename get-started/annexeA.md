@@ -1,6 +1,6 @@
 # Vous ne connaissez pas JS : Get Started - Traduction française de la 2e édition.
 --
-## Apnnexe A : Aller plus loin dans l'exploration
+## Annexe A : Aller plus loin dans l'exploration
 --
 Dans cette annexe, on va rentrer plus en détails de certains sujets du chapitre principal. Considérez ce contenu comme une prévisualisation optionnelle de certains détails nuancés traités dans la série de livres.
 
@@ -76,7 +76,7 @@ awesomeFunction.name;
 
 La propriété `name` d'une fonction va réveler soit directement son nom donné lors de sa déclaration, soit son nom inféré dans le cas d'une expression anonyme. Cette valeur est généralement utilisée pour dans les __developer tools__ quand on veut inspecter la valeur d'une fonction ou l'établissement d'une __error stack trace__
 
-Donc, même une fonction anonyme _peut_ avoir un nom. Cependant, l'inférence d'un nom se produit dans des cas spécifiques limités, comme quand l'expression d'une fonction est assignée (avec `=`) Si vous passez une expression en argument d'un appel de fonction, par exemple, il n'y a pas d'inférence de nom. La propriété `name` sera une chaîne de caractères vide, et la console de votre inspecteur va la nommer "(anonymous function)".
+Donc, même une fonction anonyme _peut_ avoir un nom. Cependant, l'inférence d'un nom se produit dans des cas spécifiques limités, comme quand l'opération d'une fonction est assignée (avec `=`) Si vous passez une expression en argument d'un appel de fonction, par exemple, il n'y a pas d'inférence de nom. La propriété `name` sera une chaîne de caractères vide, et la console de votre inspecteur va la nommer "(anonymous function)".
 
 Mais même si un nom est inféré, ça reste une fonction anonyme. Pourquoi ? Parce que le nom inféré est une métadonnée, pas un identifiant disponible pour se référer à ladite fonction. Une fonction anonyme n'a pas besoin d'identifiant pour se référer à elle-même de l'intérieur pour de la récursivité, de l'unbinding d'événement, etc.
 
@@ -157,17 +157,17 @@ Les fonctions peuvent aussi être spécifiées lors de la définition d'une clas
 
 ```javascript
 class SomethingKindaGreat {
-    // class methods
-    coolMethod() { .. }   // no commas!
+    // méthodes de classes
+    coolMethod() { .. }   // pas de virgules !
     boringMethod() { .. }
 }
 
 var EntirelyDifferent = {
-    // object methods
-    coolMethod() { .. },   // commas!
+    // méthodes d'objet
+    coolMethod() { .. },   // des virgules !
     boringMethod() { .. },
 
-    // (anonymous) function expression property
+    // propriété d'une opération de fonction (anonyme)
     oldSchool: function() { .. }
 };
 ```
@@ -179,7 +179,7 @@ Ici, il n'y a pas 36 moyens; Il faut peu à peu se familiariser avec tous les ty
 
 ### Comparaison conditionnelle coercitive
 
-Oui, le nom de cette section est assez tordu. Mais de quoi parle-t-on ici ? On parle des expressions de conditions qui nécessitent de faire des comparaisons de type coercitives pour prendre leur décision.
+Oui, le nom de cette section est assez tordu. Mais de quoi parle-t-on ici ? On parle des opérations de conditions qui nécessitent de faire des comparaisons de type coercitives pour prendre leur décision.
 
 Les déclarations `if` et la comparaison ternaire `? :`, ainsi que les tests effectués dans les boucles `while` et `for` réalisent une comparaison de valeurs implicite. Mais de quelle sorte ? Est-ce "strict" ou "coercitif" ? Et bien, les deux.
 
